@@ -12,7 +12,7 @@ import * as THREE from 'three';
 // Dynamically import the Scene component with SSR disabled
 const Scene = dynamic(() => import('./SceneWrapper'), { ssr: false });
 
-function CameraFocus({ target, duration = 5, enabled }) {
+function CameraFocus({ target, duration = 5, enabled }: { target: THREE.Vector3 | null; duration?: number; enabled: boolean }) {
   const { camera } = useThree();
   const initial = useRef(camera.position.clone());
   const timer = useRef(0);
@@ -32,8 +32,20 @@ function CameraFocus({ target, duration = 5, enabled }) {
 
 export default function ViewerPage() {
   // const searchParams = useSearchParams();
-  const [projectId, setProjectId] = useState(null);
-  const [project, setProject] = useState(null);
+  const [projectId, setProjectId] = useState<string | null>(null);
+  interface Project {
+    glbFile: string;
+    name: string;
+    description: string;
+    width: number;
+    height: number;
+    positionX: number;
+    positionY: number;
+    positionZ: number;
+    annotations?: any[];
+  }
+
+  const [project, setProject] = useState<Project | null>(null);
   const [annotations, setAnnotations] = useState([]);
   const [editing, setEditing] = useState(false);
   const [focusTarget, setFocusTarget] = useState(null);
@@ -105,7 +117,7 @@ export default function ViewerPage() {
     });
   };
 
-  function AnimateModel({ modelRef }) {
+  function AnimateModel({ modelRef }: { modelRef: THREE.Object3D }) {
     useFrame(() => {
       modelRef.rotation.y += 0.01;
     });

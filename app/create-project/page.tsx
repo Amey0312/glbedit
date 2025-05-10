@@ -23,7 +23,7 @@ export default function CreateProjectPage() {
 
     tl.from(containerRef.current, { opacity: 0, y: 50 })
       .from(headingRef.current, { opacity: 0, y: -20 }, '-=0.6')
-      .from(formRef.current?.children, {
+      .from(Array.from(formRef.current?.children || []), {
         opacity: 0,
         y: 20,
         stagger: 0.15,
