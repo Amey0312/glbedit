@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Project {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  width       Int
+  height      Int
+  glbFile     String
+  annotations Annotation[]
+  createdAt   DateTime     @default(now())
+
+  positionX   Float        @default(0)
+  positionY   Float        @default(0)
+  positionZ   Float        @default(0)
+  rotationX   Float        @default(0)
+  rotationY   Float        @default(0)
+  rotationZ   Float        @default(0)
+  scaleX      Float        @default(1)
+  scaleY      Float        @default(1)
+  scaleZ      Float        @default(1)
+}
+
+model Annotation {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  x           Float
+  y           Float
+  z           Float
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+}
