@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaClient } from '@prisma/client';
-import { mkdir } from 'fs/promises';
+import { v2 as cloudinary } from 'cloudinary';
 
 const prisma = new PrismaClient();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+  api_key: process.env.CLOUDINARY_API_KEY!,
+  api_secret: process.env.CLOUDINARY_API_SECRET!,
+});
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
@@ -17,26 +21,29 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Convert file to base64
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+    const base64 = buffer.toString('base64');
+    const dataUrl = `data:${file.type};base64,${base64}`;
 
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadsDir, { recursive: true });
-
-    const fileName = `${uuidv4()}.glb`;
-    const filePath = path.join(uploadsDir, fileName);
-
-    await writeFile(filePath, buffer);
-
-    // Update project with file name
-    await prisma.project.update({
-      where: { id: projectId },
-      data: { glbFile: fileName },
+    // Upload to Cloudinary as raw file
+    const fileName = `${uuidv4()}`;
+    const uploadResult = await cloudinary.uploader.upload(dataUrl, {
+      folder: 'glb-files',
+      resource_type: 'raw',
+      public_id: fileName,
     });
 
-    return NextResponse.json({ success: true, fileName });
+    // Save Cloudinary URL in database
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { glbFile: uploadResult.secure_url },
+    });
+
+    return NextResponse.json({ success: true, url: uploadResult.secure_url });
   } catch (error) {
-    console.error('Upload error:', error);
-    return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 });
+    console.error('Cloudinary upload error:', error);
+    return NextResponse.json({ success: false, error: 'Upload failed' }, { status: 500 });
   }
 }

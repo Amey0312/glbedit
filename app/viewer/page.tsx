@@ -98,6 +98,12 @@ export default function ViewerPage() {
     }
   }, [project]);
 
+  useEffect(() => {
+    if (project) {
+      console.log('GLB Path:', project.glbFile);  // ✅ Should show full URL
+    }
+  }, [project]);
+
   const saveModelTransform = async () => {
     if (!projectId || !modelRef) return;
     const pos = modelRef.position;
@@ -124,18 +130,25 @@ export default function ViewerPage() {
     return null;
   }
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gradient-to-r from-emerald-500 to-emerald-900 p-4">
       <div className="flex flex-col lg:flex-row justify-between items-center mb-4 gap-4">
-        <h1 className="text-2xl font-bold text-center lg:text-left">3D Project Viewer</h1>
+        <h1 className="text-2xl font-bold text-center lg:text-left lg:text-5xl font-mono text-white">3D Project Viewer</h1>
         <div className="flex items-center gap-4">
-          <label className="flex items-center space-x-2">
-            <span>Edit Mode</span>
-            <input type="checkbox" checked={editing} onChange={() => setEditing(!editing)} />
-          </label>
+
           <button
             onClick={saveModelTransform}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-300"
           >
             Save Transform
           </button>
@@ -144,13 +157,13 @@ export default function ViewerPage() {
 
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="w-full lg:w-2/3 h-[500px] rounded-lg overflow-hidden shadow">
-          <Canvas className="w-full h-full" >
+          <Canvas className="w-full h-full bg-emerald-100" >
             <ambientLight intensity={0.5} />
             <spotLight position={[10, 10, 10]} angle={0.3} penumbra={1} />
 
             {project && (
               <Scene
-                glbPath={`/uploads/${project.glbFile}`}
+                glbPath={project.glbFile}
                 onLoaded={(ref) => setModelRef(ref)}
               />
             )}
@@ -167,12 +180,19 @@ export default function ViewerPage() {
         {project && (
           <div
             ref={infoRef}
-            className="w-full lg:w-1/3 bg-white rounded-lg shadow p-6 animate-fadeIn"
+            className="w-full lg:w-1/3 bg-emerald-300 rounded-lg shadow p-6 animate-fadeIn text-white font-mono"
           >
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Model Details</h2>
-            <p className="mb-2"><strong>Title:</strong> {project.name}</p>
-            <p className="mb-2"><strong>Description:</strong> {project.description}</p>
-            <div className="mt-4">
+             <Leva
+          collapsed={isMobile}
+          fill
+          theme={{
+            sizes: { rootWidth: '100%', controlWidth: '100%' },
+          }}
+        />
+            <h2 className="text-2xl font-semibold m-4 text-white text-center ">Model Details</h2>
+            <p className="mb-2 text-lg"><strong>Title:</strong> {project.name}</p>
+            <p className="mb-2 text-lg"><strong>Description:</strong> {project.description}</p>
+            <div className="mt-4 text-lg">
               <h3 className="font-semibold mb-1">Canvas Size</h3>
               <p>Width: {project.width}</p>
               <p>Height: {project.height}</p>
@@ -192,7 +212,8 @@ export default function ViewerPage() {
             </button>
           </div>
         )}
-        <Leva collapsed={false} />
+       
+
       </div>
     </div>
   );

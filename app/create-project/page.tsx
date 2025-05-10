@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import gsap from 'gsap';
+import { useGSAP } from '@gsap/react'; // import this
 // import Link from 'next/link';
 
 export default function CreateProjectPage() {
@@ -18,18 +19,22 @@ export default function CreateProjectPage() {
   const formRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
+  useGSAP(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power2.out', duration: 0.8 } });
-
+  
     tl.from(containerRef.current, { opacity: 0, y: 50 })
       .from(headingRef.current, { opacity: 0, y: -20 }, '-=0.6')
-      .from(Array.from(formRef.current?.children || []), {
-        opacity: 0,
-        y: 20,
-        stagger: 0.15,
-      }, '-=0.6')
-      .from(buttonRef.current, { opacity: 0, scale: 0.9 }, '-=0.4');
-  }, []);
+      .from(
+        Array.from(formRef.current?.children || []),
+        {
+          opacity: 0,
+          y: 20,
+          stagger: 0.15,
+        },
+        '-=0.6'
+      );
+  }, { scope: containerRef }); // optional: scoping to avoid animations outside this ref
+  
 
   const handleCreateProject = async () => {
     const res = await fetch('/api/project', {
@@ -50,55 +55,55 @@ export default function CreateProjectPage() {
   return (
     <div
       ref={containerRef}
-      className="min-h-screen bg-gradient-to-br from-sky-100 to-white flex items-center justify-center px-4 py-12"
+      className="min-h-screen bg-emerald-900 flex items-center justify-center px-4 py-12"
     >
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-8">
+      <div className="w-full max-w-2xl bg-gradient-to-b from-teal-400 to-yellow-200 rounded-2xl shadow-lg p-8">
         <h1
           ref={headingRef}
-          className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-6 text-center"
+          className="text-2xl sm:text-4xl font-extrabold text-white mb-6 font-mono "
         >
           Create a New Project
         </h1>
 
         <div ref={formRef} className="space-y-4">
           <div>
-            <label className="block font-medium text-gray-700">Project Name</label>
+            <label className="block font-bold font-mono text-white">Project Name</label>
             <input
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              className="border rounded-md p-2 w-full"
+              className=" rounded-xl p-2 w-full bg-white"
               placeholder="Enter project name"
             />
           </div>
 
           <div>
-            <label className="block font-medium text-gray-700">Description</label>
+            <label className="block font-bold font-mono text-white">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="border rounded-md p-2 w-full"
+              className=" rounded-xl p-2 w-full bg-white"
               placeholder="Describe your project"
             />
           </div>
 
           <div>
-            <label className="block font-medium text-gray-700">Canvas Width</label>
+            <label className="block font-bold font-mono text-white">Canvas Width</label>
             <input
               type="number"
               value={canvasWidth}
               onChange={(e) => setCanvasWidth(parseInt(e.target.value))}
-              className="border rounded-md p-2 w-full"
+              className=" rounded-xl p-2 w-full bg-white"
             />
           </div>
 
           <div>
-            <label className="block font-medium text-gray-700">Canvas Height</label>
+            <label className="block font-bold font-mono text-white">Canvas Height</label>
             <input
               type="number"
               value={canvasHeight}
               onChange={(e) => setCanvasHeight(parseInt(e.target.value))}
-              className="border rounded-md p-2 w-full"
+              className=" rounded-xl p-2 w-full bg-white"
             />
           </div>
         </div>
