@@ -44,33 +44,81 @@ export default function UploadGlbPage() {
     }
   };
 
+  // const handleSubmit = async () => {
+  //   if (!file || !projectId) {
+  //     alert('Missing file or project ID');
+  //     return;
+  //   }
+
+  //   setUploading(true);
+
+  //   const formData = new FormData();
+  //   formData.append('file', file);
+  //   formData.append('projectId', projectId);
+
+  //   try {
+  //     const res = await fetch('/api/upload-glb', {
+  //       method: 'POST',
+  //       body: formData,
+  //     });
+
+  //     if (!res.ok) throw new Error('Failed to upload');
+
+  //     const { success } = await res.json();
+
+  //     if (success) {
+  //       router.push(`/viewer?projectId=${projectId}`);
+  //     } else {
+  //       alert('Upload failed');
+  //     }
+  //   } catch (err) {
+  //     console.error('Upload error:', err);
+  //     alert('Error uploading file');
+  //   } finally {
+  //     setUploading(false);
+  //   }
+  // };
+
   const handleSubmit = async () => {
     if (!file || !projectId) {
       alert('Missing file or project ID');
       return;
     }
-
+  
     setUploading(true);
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('projectId', projectId);
-
+  
     try {
-      const res = await fetch('/api/upload-glb', {
+      const cloudFormData = new FormData();
+      cloudFormData.append('file', file);
+      cloudFormData.append('upload_preset', 'unsigned_glb_upload'); // Replace with your preset
+      cloudFormData.append('folder', 'glb-files'); // Optional
+  
+      // Upload to Cloudinary directly
+      const cloudRes = await fetch('https://api.cloudinary.com/v1_1/dqpzfxaaq/raw/upload', {
         method: 'POST',
-        body: formData,
+        body: cloudFormData,
       });
-
-      if (!res.ok) throw new Error('Failed to upload');
-
-      const { success } = await res.json();
-
-      if (success) {
-        router.push(`/viewer?projectId=${projectId}`);
-      } else {
-        alert('Upload failed');
+  
+      const cloudData = await cloudRes.json();
+      if (!cloudRes.ok || !cloudData.secure_url) {
+        throw new Error('Cloudinary upload failed');
       }
+  
+      // Send Cloudinary URL to your backend to save in DB
+      const saveRes = await fetch('/api/save-glb-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId,
+          glbFile: cloudData.secure_url,
+        }),
+      });
+  
+      if (!saveRes.ok) {
+        throw new Error('Failed to save file URL');
+      }
+  
+      router.push(`/viewer?projectId=${projectId}`);
     } catch (err) {
       console.error('Upload error:', err);
       alert('Error uploading file');
@@ -78,7 +126,7 @@ export default function UploadGlbPage() {
       setUploading(false);
     }
   };
-
+  
   return (
     <div
       ref={containerRef}
