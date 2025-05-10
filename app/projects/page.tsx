@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
-gsap.registerPlugin(useGSAP); 
-
+gsap.registerPlugin(useGSAP);
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -27,23 +26,30 @@ export default function ProjectsPage() {
       });
   }, []);
 
-  // useGSAP animation hook
-  useGSAP(() => {
-    gsap.from(headingRef.current, {
-      y: -30,
-      opacity: 0,
-      duration: 1,
-      ease: 'power3.out',
-    });
+  useGSAP(
+    () => {
+      if (!cardsRef.current) return;
 
-    gsap.from(cardsRef.current?.children || [], {
-      opacity: 0,
-      y: 40,
-      stagger: 0.2,
-      duration: 0.8,
-      ease: 'power2.out',
-    });
-  }, { scope: containerRef, dependencies: [projects] });
+      gsap.from(headingRef.current, {
+        y: -30,
+        opacity: 0,
+        duration: 1,
+        ease: 'power3.out',
+      });
+
+      gsap.from(cardsRef.current.children, {
+        opacity: 0,
+        y: 40,
+        stagger: 0.2,
+        duration: 0.8,
+        ease: 'power2.out',
+      });
+    },
+    {
+      scope: containerRef,
+      dependencies: [projects],
+    }
+  );
 
   const handlePreview = (projectId: string) => {
     router.push(`/viewer?projectId=${projectId}`);
@@ -52,18 +58,18 @@ export default function ProjectsPage() {
   return (
     <div
       ref={containerRef}
-      className="min-h-screen bg-gradient-to-br from-sky-50 to-white px-4 py-12"
+      className="min-h-screen bg-emerald-900 px-4 py-12"
     >
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto font-mono">
         <h1
           ref={headingRef}
-          className="text-3xl sm:text-4xl font-extrabold text-center text-gray-800 mb-10"
+          className="text-3xl sm:text-6xl font-extrabold text-center text-white mb-10"
         >
           All Projects
         </h1>
 
         {projects.length === 0 ? (
-          <p className="text-center text-gray-600">No projects found.</p>
+          <p className="text-center text-white">No projects found.</p>
         ) : (
           <ul
             ref={cardsRef}
@@ -81,7 +87,7 @@ export default function ProjectsPage() {
                 </div>
                 <button
                   onClick={() => handlePreview(project.id)}
-                  className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+                  className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-300 text-white rounded-lg transition"
                 >
                   Preview
                 </button>
