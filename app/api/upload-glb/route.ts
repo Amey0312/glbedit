@@ -60,6 +60,14 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Handle CORS headers
+    const response = NextResponse.json(
+      { success: true, url: 'some-upload-url' },
+      { status: 200 }
+    );
+    response.headers.set('Access-Control-Allow-Origin', '*'); // Adjust the allowed origin as needed
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     // Check file size
     const fileSize = file.size;
     if (fileSize > 50 * 1024 * 1024) { // 50 MB
